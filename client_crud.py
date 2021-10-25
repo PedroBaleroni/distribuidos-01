@@ -40,8 +40,8 @@ while op != 5:
             data = {'id':movie_id,'name': movie_name, 'duration': movie_time, 'director': movie_director}
             package = pickle.dumps(data, -1)
             op_b = op.to_bytes(1,'big')
-            package_send = str.encode(package)
-            package_send = package_send + bytes(500 - len(package_send))
+            
+            package_send = package + bytes(500 - len(package))
 
             tcp.send(op_b + package_send)
             # Lê o tamanho da mensagem de resposta
@@ -62,8 +62,7 @@ while op != 5:
             data = {'id':movie_id,'name': movie_name, 'duration': movie_time, 'director': movie_director}
             package = pickle.dumps(data, -1)
             op_b = op.to_bytes(1,'big')
-            package_send = str.encode(package)
-            package_send = package_send + bytes(500 - len(package_send))
+            package_send = package + bytes(500 - len(package))
 
             tcp.send(op_b + package_send)
             # Lê o tamanho da mensagem de resposta
@@ -76,8 +75,7 @@ while op != 5:
 
             package = pickle.dumps(data, -1)
             op_b = op.to_bytes(1,'big')
-            package_send = str.encode(package)
-            package_send = package_send + bytes(500 - len(package_send))
+            package_send = package + bytes(500 - len(package))
 
             tcp.send(op_b + package_send)
             # Lê o tamanho da mensagem de resposta

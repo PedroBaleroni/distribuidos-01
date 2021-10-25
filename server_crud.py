@@ -27,63 +27,71 @@ while op != 5:
 
     if op >= 1 and op <= 4:
 
-        pickle_string = tcp_dados.recv(500).decode('utf-8')
-        pickle_string = pickle_string.rstrip('\x00')
-
-        print("Recebido: {}".format(pickle_string))
-        data = pickle.loads(pickle_string)
+        pickle_data = pickle.loads(tcp_dados.recv(500))
+        data = pickle_data
+        print(data)
+        
 
         db_return = {'data' : 'none'}
         #insert
         if op == 1:
-            id = int(split_a[1])
-            marca = split_a[2]
-            preco = int(split_a[3])
-            carro = Carro(id, marca, preco)
-            carrosVet.append(carro)
-            resp = 'Carro criado com sucesso'
-            tam_resp = (len(resp)).to_bytes(2, 'big')
-            tcp_dados.send(tam_resp + resp.encode())
+    
+            database.append(data)
+            resp = 'CREATED'
+            package_send = str.encode(resp)
+            package_send = package_send + bytes(500 - len(package_send))
+
+            tcp_dados.send(package_send)
 
         #update
-        elif op == 2:
-            id = split_a[1]
-            try:
-                carro = [item for item in carrosVet if item.id == int(id)][0]
-                resp = str(carro)
-            except:
-                resp = 'Carro não encontrado'
-            tam_resp = (len(resp)).to_bytes(2, 'big')
-            tcp_dados.send(tam_resp + resp.encode())
-        #find
         elif op == 3:
-            id = split_a[1]
+            id = data['id']
             try:
-                carro = [item for item in carrosVet if item.id == int(id)][0]
-                marca = split_a[2]
-                preco = int(split_a[3])
-                carro.marca = marca
-                carro.preco = preco
-                resp = str(carro)
+                info = [item for item in database if item['id']== int(id)][0]
+                name = data['name']
+                duration = data['duration']
+                director = data['director']
+                info['name'] = name
+                info['duration'] = duration
+                info['director'] = director
+                resp = 'UPDATED'
+            
             except:
-                resp = 'Carro não encontrado'
-            tam_resp = (len(resp)).to_bytes(2, 'big')
-            tcp_dados.send(tam_resp + resp.encode())
+                resp = 'Filme não encontrado'
+            package_send = str.encode(resp)
+            package_send = package_send + bytes(500 - len(package_send))
+
+            tcp_dados.send(package_send)
+        #find
+        elif op == 2:
+            
+            id = data['id']
+            try:
+                info = [item for item in database if item['id'] == int(id)][0]
+                resp = str(info)
+            except:
+                resp = 'Filme não encontrado'
+            package_send = str.encode(resp)
+            package_send = package_send + bytes(500 - len(package_send))
+
+            tcp_dados.send(package_send)
         #delete
         else:
-            id = split_a[1]
+            id = data['id']
             try:
-                carro = [item for item in carrosVet if item.id == int(id)][0]
-                carrosVet.pop(carrosVet.index(carro))
-                resp = 'Carro deletado com sucesso'
+                info = [item for item in database if item['id'] == int(id)][0]
+                database.pop(database.index(info))
+                resp = 'DELETED'
             except:
-                resp = 'Carro não encontrado'
-            tam_resp = (len(resp)).to_bytes(2, 'big')
-            tcp_dados.send(tam_resp + resp.encode())
+                resp = 'Filme não encontrado'
+            package_send = str.encode(resp)
+            package_send = package_send + bytes(500 - len(package_send))
+
+            tcp_dados.send(package_send)
 
 # Fechando os sockets
 tcp_dados.close()
 
-tcp.close()
+tcp_dados.close()
 
 input('aperte enter para encerrar')
